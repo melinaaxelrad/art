@@ -3,14 +3,40 @@ let auth = null;
 let db = null;
 const ADMIN_EMAIL = 'melinaaxelrad@gmail.com';
 
+// Check if Firebase is properly configured
+function isFirebaseConfigured() {
+    try {
+        if (!window.firebaseModules) {
+            return false;
+        }
+        // Check if firebaseConfig exists and is not a placeholder
+        if (typeof firebaseConfig === 'undefined' || !firebaseConfig) {
+            return false;
+        }
+        // Check if config has placeholder values
+        if (firebaseConfig.apiKey === 'YOUR_API_KEY' || 
+            firebaseConfig.projectId === 'YOUR_PROJECT_ID' ||
+            !firebaseConfig.apiKey || 
+            !firebaseConfig.projectId) {
+            return false;
+        }
+        return true;
+    } catch (error) {
+        return false;
+    }
+}
+
 // Initialize Firebase
 function initFirebase() {
-    if (!window.firebaseModules || !firebaseConfig || firebaseConfig.apiKey === 'YOUR_API_KEY') {
+    if (!isFirebaseConfigured()) {
         console.warn('Firebase not configured. Admin features will not work.');
         return false;
     }
 
     try {
+        if (!window.firebaseModules) {
+            return false;
+        }
         const app = window.firebaseModules.initializeApp(firebaseConfig);
         auth = window.firebaseModules.getAuth(app);
         db = window.firebaseModules.getFirestore(app);
@@ -35,29 +61,43 @@ function renderAdminPage() {
         main.innerHTML = `
             <div class="admin-page">
                 <h1>Admin</h1>
-                <div class="error-message">
-                    <p>Firebase is not configured. Please set up Firebase and add your configuration to firebase-config.js</p>
-                    <p>See README.md for setup instructions.</p>
+                <div class="error-message" style="margin-top: 2rem;">
+                    <h2>Admin requires Firebase setup</h2>
+                    <p>Firebase is not configured. To enable admin features:</p>
+                    <ol style="text-align: left; max-width: 600px; margin: 1rem auto;">
+                        <li>Set up a Firebase project (see README.md)</li>
+                        <li>Add your Firebase configuration to <code>firebase-config.js</code></li>
+                        <li>Enable Email/Password authentication in Firebase Console</li>
+                        <li>Create a user with email: <code>melinaaxelrad@gmail.com</code></li>
+                    </ol>
+                    <p>Once configured, you'll be able to log in and create blog posts and announcements.</p>
                 </div>
             </div>
         `;
-        updateNavigation();
+        if (typeof updateNavigation === 'function') {
+            updateNavigation();
+        }
         return;
     }
 
     // Check auth state
-    auth.onAuthStateChanged((user) => {
-        if (!user) {
-            // Not logged in - show login form
-            renderLoginForm();
-        } else if (isAdmin(user)) {
-            // Admin logged in - show admin UI
-            renderAdminUI(user);
-        } else {
-            // Logged in but not authorized
-            renderNotAuthorized();
-        }
-    });
+    try {
+        auth.onAuthStateChanged((user) => {
+            if (!user) {
+                // Not logged in - show login form
+                renderLoginForm();
+            } else if (isAdmin(user)) {
+                // Admin logged in - show admin UI
+                renderAdminUI(user);
+            } else {
+                // Logged in but not authorized
+                renderNotAuthorized();
+            }
+        });
+    } catch (error) {
+        console.error('Auth state error:', error);
+        renderLoginForm();
+    }
 }
 
 // Render login form
@@ -98,7 +138,9 @@ function renderLoginForm() {
         }
     });
 
-    updateNavigation();
+    if (typeof updateNavigation === 'function') {
+        updateNavigation();
+    }
 }
 
 // Render not authorized message
@@ -113,7 +155,9 @@ function renderNotAuthorized() {
     `;
 
     document.getElementById('logout-btn').addEventListener('click', handleLogout);
-    updateNavigation();
+    if (typeof updateNavigation === 'function') {
+        updateNavigation();
+    }
 }
 
 // Render admin UI
@@ -190,7 +234,9 @@ function renderAdminUI(user) {
     // Handle logout
     document.getElementById('logout-btn').addEventListener('click', handleLogout);
 
-    updateNavigation();
+    if (typeof updateNavigation === 'function') {
+        updateNavigation();
+    }
 }
 
 // Create new post

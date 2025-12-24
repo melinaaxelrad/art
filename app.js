@@ -2,6 +2,28 @@
 let artworks = [];
 let blogPosts = [];
 
+// Get base path for assets (handles GitHub Pages subdirectory)
+function getBasePath() {
+    const path = window.location.pathname;
+    // If path is like /art/index.html or /art/, return /art/
+    // Otherwise return /
+    if (path.includes('/art/')) {
+        return '/art/';
+    }
+    return '/';
+}
+
+// Convert relative image path to absolute path
+function getImagePath(relativePath) {
+    if (relativePath.startsWith('http://') || relativePath.startsWith('https://') || relativePath.startsWith('/')) {
+        return relativePath;
+    }
+    const base = getBasePath();
+    // Remove leading ./ or images/ if present, then add base
+    const cleanPath = relativePath.replace(/^\.\//, '').replace(/^images\//, '');
+    return base + 'images/' + cleanPath;
+}
+
 // Simple markdown parser (basic support)
 function parseMarkdown(md) {
     // Convert headers
@@ -55,8 +77,18 @@ function parseFrontmatter(content) {
 // Load artworks from JSON
 async function loadArtworks() {
     try {
-        const response = await fetch('content/images.json');
+        const basePath = getBasePath();
+        const response = await fetch(basePath + 'content/images.json');
+        if (!response.ok) {
+            throw new Error(`Failed to load images.json: ${response.status}`);
+        }
         artworks = await response.json();
+        // Ensure all image paths are absolute
+        artworks = artworks.map(artwork => ({
+            ...artwork,
+            mainImage: getImagePath(artwork.mainImage),
+            angles: artwork.angles.map(angle => getImagePath(angle))
+        }));
         return artworks;
     } catch (error) {
         console.error('Error loading artworks:', error);
@@ -64,17 +96,40 @@ async function loadArtworks() {
     }
 }
 
+// Check if Firebase is properly configured
+function isFirebaseConfigured() {
+    try {
+        if (!window.firebaseModules) {
+            return false;
+        }
+        // Check if firebaseConfig exists and is not a placeholder
+        if (typeof firebaseConfig === 'undefined' || !firebaseConfig) {
+            return false;
+        }
+        // Check if config has placeholder values
+        if (firebaseConfig.apiKey === 'YOUR_API_KEY' || 
+            firebaseConfig.projectId === 'YOUR_PROJECT_ID' ||
+            !firebaseConfig.apiKey || 
+            !firebaseConfig.projectId) {
+            return false;
+        }
+        return true;
+    } catch (error) {
+        return false;
+    }
+}
+
 // Initialize Firestore (for blog posts)
 let firestoreDb = null;
 
 function initFirestore() {
-    if (!window.firebaseModules || !firebaseConfig || firebaseConfig.apiKey === 'YOUR_API_KEY') {
+    if (!isFirebaseConfigured()) {
         // Firebase not configured - fall back to markdown files
         return false;
     }
 
     try {
-        if (!firestoreDb) {
+        if (!firestoreDb && window.firebaseModules) {
             const app = window.firebaseModules.initializeApp(firebaseConfig);
             firestoreDb = window.firebaseModules.getFirestore(app);
         }
@@ -191,9 +246,10 @@ function renderGallery(artworksData) {
         img.src = artwork.mainImage;
         img.alt = artwork.title;
         img.onload = () => {
-            placeholder.style.display = 'none';
+            if (placeholder) placeholder.style.display = 'none';
         };
-        img.onerror = () => {
+        img.onerror = (e) => {
+            console.warn('Failed to load image:', artwork.mainImage);
             img.style.display = 'none';
         };
         
@@ -571,8 +627,18 @@ router.register('/images/:id', renderImageDetail);
 router.register('/blog', renderBlogIndex);
 router.register('/blog/:slug', renderBlogPost);
 
-// Initialize on load
+// Initialize on load - ensure it always runs even if Firebase fails
 document.addEventListener('DOMContentLoaded', () => {
-    router.handleRoute();
+    try {
+        router.handleRoute();
+    } catch (error) {
+        console.error('Error initializing app:', error);
+        // Fallback: try to render home page
+        try {
+            renderHome();
+        } catch (e) {
+            console.error('Failed to render home page:', e);
+        }
+    }
 });
 
