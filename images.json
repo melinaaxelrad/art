@@ -4,8 +4,8 @@
     "title": "Hydrangeas",
     "details": "20 x 20, oil on canvas",
     "price": "$1,200",
-    "mainImage": "images/painting-1.jpg",
-    "angles": ["images/painting-1.jpg"],
+    "mainImage": "images/painting-1.JPG",
+    "angles": ["images/painting-1.JPG"],
     "width": 20,
     "height": 20
   },
@@ -14,8 +14,8 @@
     "title": "Dolomites",
     "details": "8 x 10, oil on canvas",
     "price": "$250",
-    "mainImage": "images/painting-2.jpg",
-    "angles": ["images/painting-2.jpg"],
+    "mainImage": "images/painting-2.JPG",
+    "angles": ["images/painting-2.JPG"],
     "width": 8,
     "height": 10
   },
