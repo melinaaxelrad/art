@@ -172,14 +172,8 @@ function renderGallery(artworksData) {
         item.className = 'artwork-item';
         item.setAttribute('data-route', `/images/${artwork.id}`);
         
-        // Calculate aspect ratio
-        const aspectRatio = artwork.width && artwork.height 
-            ? artwork.width / artwork.height 
-            : 1;
-        
         const imageContainer = document.createElement('div');
         imageContainer.className = 'artwork-image';
-        imageContainer.style.aspectRatio = aspectRatio;
         imageContainer.style.cursor = 'pointer';
         
         const placeholder = document.createElement('div');

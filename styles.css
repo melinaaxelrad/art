@@ -100,21 +100,22 @@ section h2 {
     flex-direction: column;
 }
 
-/* Ensure the image container does not reserve extra space */
 .artwork-image {
-  aspect-ratio: auto !important;
-  height: auto !important;
-  min-height: 0 !important;
+    width: 100%;
+    margin-bottom: 1rem;
+    overflow: hidden;
+    background-color: transparent;
+    position: relative;
+    display: block;
 }
 
-/* Image should size naturally */
 .artwork-image img {
-  width: 100% !important;
-  height: auto !important;
-  display: block;
-  position: static !important;
-  top: auto !important;
-  left: auto !important;
+    width: 100%;
+    height: auto;
+    display: block;
+    transition: transform 0.3s ease;
+    margin: 0;
+    padding: 0;
 }
 
 .artwork-image:hover img {
@@ -122,9 +123,18 @@ section h2 {
 }
 
 .placeholder-image {
-  display: none; /* hidden unless explicitly shown */
-}
-
+    width: 100%;
+    min-height: 200px;
+    background: linear-gradient(135deg, #e8e8e8 0%, #f5f5f5 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #999;
+    font-size: 0.9rem;
+    letter-spacing: 0.05em;
+    border: 2px dashed #ddd;
+    margin: 0;
+    padding: 0;
 }
 
 .placeholder-image span {
@@ -779,19 +789,5 @@ footer {
     .admin-page {
         padding: 1rem;
     }
-}
-
-/* Ensure the image container does not reserve extra space */
-.artwork-image {
-  aspect-ratio: auto !important;  /* overrides inline aspect-ratio */
-  height: auto !important;
-  min-height: 0 !important;
-}
-
-/* Image should size naturally */
-.artwork-image img {
-  width: 100% !important;
-  height: auto !important;
-  display: block;
 }
 
