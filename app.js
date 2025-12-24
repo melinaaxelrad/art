@@ -2,15 +2,28 @@
 let artworks = [];
 let blogPosts = [];
 
-// Get base path for assets (handles GitHub Pages subdirectory)
-function getBasePath() {
+// Base path constant - single source of truth
+const BASE_PATH = (() => {
     const path = window.location.pathname;
-    // If path is like /art/index.html or /art/, return /art/
-    // Otherwise return /
+    // Detect if we're in a subdirectory (GitHub Pages)
     if (path.includes('/art/')) {
         return '/art/';
     }
+    // For local development or root deployment
     return '/';
+})();
+
+// Get base path for assets (uses BASE_PATH constant)
+function getBasePath() {
+    return BASE_PATH;
+}
+
+// Build URL with base path for hash routing
+function buildUrl(route) {
+    // Remove leading slash if present
+    const cleanRoute = route.startsWith('/') ? route.substring(1) : route;
+    // Return hash-based URL with base path
+    return `${BASE_PATH}#/${cleanRoute}`;
 }
 
 // Convert relative image path to absolute path
@@ -190,7 +203,7 @@ function renderImageDetail(id) {
     const main = document.querySelector('main');
     main.innerHTML = `
         <div class="image-detail-page">
-            <a href="/" data-route="/" class="back-link">← Back to Portfolio</a>
+            <a href="#" data-route="/" class="back-link">← Back to Portfolio</a>
             
             <div class="image-detail-container">
                 <div class="image-viewer">
@@ -364,13 +377,13 @@ async function renderBlogIndex() {
             <div class="blog-posts-list">
                 ${blogOnlyPosts.length > 0 ? blogOnlyPosts.map(post => `
                     <article class="blog-post-preview">
-                        <h2><a href="/blog/${post.slug}" data-route="/blog/${post.slug}">${post.title}</a></h2>
+                        <h2><a href="#" data-route="/blog/${post.slug}">${post.title}</a></h2>
                         <div class="post-meta">
                             <span class="post-date">${new Date(post.date).toLocaleDateString()}</span>
                             <span class="post-type">Blog</span>
                         </div>
                         <p class="post-excerpt">${post.excerpt || ''}</p>
-                        <a href="/blog/${post.slug}" data-route="/blog/${post.slug}" class="read-more">Read more →</a>
+                        <a href="#" data-route="/blog/${post.slug}" class="read-more">Read more →</a>
                     </article>
                 `).join('') : '<p>No blog posts yet.</p>'}
             </div>
@@ -393,7 +406,7 @@ async function renderBlogPost(slug) {
     const main = document.querySelector('main');
     main.innerHTML = `
         <div class="blog-post-page">
-            <a href="/blog" data-route="/blog" class="back-link">← Back to Blog</a>
+            <a href="#" data-route="/blog" class="back-link">← Back to Blog</a>
             <article class="blog-post">
                 <h1>${post.title}</h1>
                 <div class="post-meta">
@@ -493,7 +506,7 @@ async function loadAnnouncements() {
     
     container.innerHTML = announcements.map(announcement => `
         <div class="announcement-item">
-            <h3><a href="/blog/${announcement.slug}" data-route="/blog/${announcement.slug}">${announcement.title}</a></h3>
+            <h3><a href="#" data-route="/blog/${announcement.slug}">${announcement.title}</a></h3>
             <p class="announcement-date">${new Date(announcement.date).toLocaleDateString()}</p>
             <p class="announcement-excerpt">${announcement.excerpt}</p>
         </div>
@@ -514,14 +527,22 @@ function initContactForm() {
 
 // Update navigation active state
 function updateNavigation() {
-    const currentPath = window.location.pathname;
+    const hash = window.location.hash || '';
+    const currentRoute = hash.startsWith('#/') ? hash.substring(2) : (hash.startsWith('#') ? hash.substring(1) : '');
     const navLinks = document.querySelectorAll('.nav-menu a');
     
     navLinks.forEach(link => {
         link.classList.remove('active');
-        const href = link.getAttribute('href') || link.getAttribute('data-route');
-        if (href === currentPath || (currentPath === '/' && href === '#portfolio')) {
-            link.classList.add('active');
+        const route = link.getAttribute('data-route');
+        if (route) {
+            // Remove leading slash and compare
+            const cleanRoute = route.startsWith('/') ? route.substring(1) : route;
+            // Handle home route
+            if ((!currentRoute || currentRoute === '') && (cleanRoute === '' || cleanRoute === '#')) {
+                link.classList.add('active');
+            } else if (currentRoute === cleanRoute || currentRoute.startsWith(cleanRoute + '/')) {
+                link.classList.add('active');
+            }
         }
     });
 }
@@ -531,6 +552,7 @@ router.register('/', renderHome);
 router.register('/images/:id', renderImageDetail);
 router.register('/blog', renderBlogIndex);
 router.register('/blog/:slug', renderBlogPost);
+// Admin route is registered in admin.js
 
 // Initialize on load - ensure it always runs even if Firebase fails
 document.addEventListener('DOMContentLoaded', () => {

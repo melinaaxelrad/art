@@ -4,10 +4,24 @@
     <meta charset="utf-8">
     <title>Redirecting...</title>
     <script>
-        // GitHub Pages SPA fallback
-        // Redirect all 404s to index.html for client-side routing
-        sessionStorage.redirect = location.href;
-        location.replace(location.pathname.split('/').slice(0, -1).join('/') + '/index.html');
+        // GitHub Pages SPA fallback for hash routing
+        // Extract the path after /art/ and convert to hash route
+        const path = window.location.pathname;
+        const basePath = '/art/';
+        
+        if (path.startsWith(basePath)) {
+            // Extract route after base path
+            const route = path.substring(basePath.length);
+            // Redirect to index.html with hash route
+            if (route && route !== 'index.html') {
+                window.location.replace(basePath + 'index.html#/' + route);
+            } else {
+                window.location.replace(basePath + 'index.html');
+            }
+        } else {
+            // Fallback for root deployment
+            window.location.replace('/index.html');
+        }
     </script>
 </head>
 <body>
