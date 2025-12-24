@@ -100,21 +100,22 @@ section h2 {
     flex-direction: column;
 }
 
+/* Ensure the image container does not reserve extra space */
 .artwork-image {
-  width: 100%;
-  margin-bottom: 1rem;
-  background: transparent;
-  position: relative;
+  aspect-ratio: auto !important;
+  height: auto !important;
+  min-height: 0 !important;
 }
 
+/* Image should size naturally */
 .artwork-image img {
-  width: 100%;
-  height: auto;
-  object-fit: contain;
+  width: 100% !important;
+  height: auto !important;
   display: block;
-  position: static;
+  position: static !important;
+  top: auto !important;
+  left: auto !important;
 }
-
 
 .artwork-image:hover img {
     transform: scale(1.02);
