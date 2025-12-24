@@ -104,7 +104,7 @@ section h2 {
     width: 100%;
     margin-bottom: 1rem;
     overflow: hidden;
-    background-color: #f5f5f5;
+    background-color: transparent;
     position: relative;
     /* Aspect ratio will be set dynamically via inline style */
     min-height: 200px;
@@ -119,6 +119,8 @@ section h2 {
     top: 0;
     left: 0;
     transition: transform 0.3s ease;
+    margin: 0;
+    padding: 0;
 }
 
 .artwork-image:hover img {
