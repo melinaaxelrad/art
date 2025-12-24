@@ -1,0 +1,21 @@
+[
+  {
+    "id": "1",
+    "title": "Welcome to My Art Journey",
+    "slug": "welcome-blog",
+    "date": "2025-01-10",
+    "type": "blog",
+    "excerpt": "A brief introduction to my artistic practice and inspiration.",
+    "content": "<p>Welcome to my website! I'm Melina Axelrad, a 21-year-old artist based in Arlington, Virginia.</p><h2>My Inspiration</h2><p>My passion for painting comes from my late grandmother, Florence-ann, who was an exceptional multimedia artist. She always encouraged my creative endeavors and taught me to see the beauty in everyday scenes.</p><h2>My Process</h2><p>I primarily work with oil paints, which allow me to achieve rich color saturation and smooth blending. My work explores lighting and shapes in landscapes, from intimate backyard scenes to expansive mountain vistas and ocean views.</p><p>Each painting is a meditation on place and memory, capturing moments of light and atmosphere that feel both familiar and transcendent.</p><p>Thank you for visiting, and I hope my work resonates with you.</p>"
+  },
+  {
+    "id": "2",
+    "title": "New Exhibition Opening",
+    "slug": "new-exhibition-opening",
+    "date": "2025-01-15",
+    "type": "announcement",
+    "excerpt": "Excited to announce my upcoming exhibition featuring recent landscape works.",
+    "content": "<p>I'm thrilled to announce that my latest collection of landscape paintings will be on display at the Arlington Arts Center starting February 1st, 2025.</p><p>The exhibition, titled \"From Backyard to Mountains,\" features works that explore the relationship between familiar local scenes and distant vistas. Each piece captures the unique lighting and atmospheric conditions that define these different landscapes.</p><p>The opening reception will be held on February 1st from 6-8 PM. I hope to see you there!</p>"
+  }
+]
+
