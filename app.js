@@ -26,6 +26,20 @@ function buildUrl(route) {
     return `${BASE_PATH}#/${cleanRoute}`;
 }
 
+// Build absolute URL with base path
+function buildAbsoluteUrl(relativePath) {
+    // If already absolute, return as-is
+    if (relativePath.startsWith('http://') || relativePath.startsWith('https://')) {
+        return relativePath;
+    }
+    
+    // Use URL constructor to build absolute path
+    // BASE_PATH is like "/art/" or "/"
+    const baseUrl = window.location.origin + BASE_PATH;
+    const url = new URL(relativePath, baseUrl);
+    return url.toString();
+}
+
 // Convert relative image path to absolute path
 function getImagePath(relativePath) {
     if (relativePath.startsWith('http://') || relativePath.startsWith('https://') || relativePath.startsWith('/')) {
@@ -90,9 +104,13 @@ function parseFrontmatter(content) {
 // Load artworks from JSON
 async function loadArtworks() {
     try {
-        const basePath = getBasePath();
-        const response = await fetch(basePath + 'content/images.json');
+        const imagesUrl = buildAbsoluteUrl('content/images.json');
+        console.log('Fetching images from:', imagesUrl);
+        
+        const response = await fetch(imagesUrl);
         if (!response.ok) {
+            console.error(`Failed to load images.json: ${response.status} ${response.statusText}`);
+            console.error('Attempted URL:', imagesUrl);
             throw new Error(`Failed to load images.json: ${response.status}`);
         }
         artworks = await response.json();
@@ -102,9 +120,11 @@ async function loadArtworks() {
             mainImage: getImagePath(artwork.mainImage),
             angles: artwork.angles.map(angle => getImagePath(angle))
         }));
+        console.log(`Loaded ${artworks.length} artworks`);
         return artworks;
     } catch (error) {
         console.error('Error loading artworks:', error);
+        console.error('Attempted URL:', buildAbsoluteUrl('content/images.json'));
         return [];
     }
 }
@@ -112,8 +132,8 @@ async function loadArtworks() {
 // Load blog posts from JSON file
 async function loadBlogPosts() {
     try {
-        // Use BASE_PATH constant (not function call) to ensure absolute path
-        const postsUrl = BASE_PATH + 'content/posts.json';
+        // Use URL builder to ensure absolute path regardless of current route
+        const postsUrl = buildAbsoluteUrl('content/posts.json');
         console.log('Fetching posts from:', postsUrl);
         
         const response = await fetch(postsUrl);
@@ -134,7 +154,7 @@ async function loadBlogPosts() {
         return blogPosts;
     } catch (error) {
         console.error('Error loading blog posts:', error);
-        console.error('Attempted URL:', BASE_PATH + 'content/posts.json');
+        console.error('Attempted URL:', buildAbsoluteUrl('content/posts.json'));
         blogPosts = [];
         return blogPosts;
     }
