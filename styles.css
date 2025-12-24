@@ -778,6 +778,8 @@ footer {
     .admin-page {
         padding: 1rem;
     }
+}
+
 /* Ensure the image container does not reserve extra space */
 .artwork-image {
   aspect-ratio: auto !important;  /* overrides inline aspect-ratio */
@@ -790,7 +792,5 @@ footer {
   width: 100% !important;
   height: auto !important;
   display: block;
-}
-
 }
 
