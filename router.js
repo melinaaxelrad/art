@@ -60,6 +60,8 @@ class Router {
         // Handle path routes
         if (path === '/' || path === '/index.html') {
             this.routes['/']?.();
+        } else if (path === '/admin') {
+            this.routes['/admin']?.();
         } else if (path.startsWith('/images/')) {
             const id = path.split('/images/')[1];
             this.routes['/images/:id']?.(id);

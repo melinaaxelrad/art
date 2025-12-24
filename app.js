@@ -64,10 +64,72 @@ async function loadArtworks() {
     }
 }
 
-// Load blog posts
-async function loadBlogPosts() {
+// Initialize Firestore (for blog posts)
+let firestoreDb = null;
+
+function initFirestore() {
+    if (!window.firebaseModules || !firebaseConfig || firebaseConfig.apiKey === 'YOUR_API_KEY') {
+        // Firebase not configured - fall back to markdown files
+        return false;
+    }
+
     try {
-        // Load manifest to get list of posts
+        if (!firestoreDb) {
+            const app = window.firebaseModules.initializeApp(firebaseConfig);
+            firestoreDb = window.firebaseModules.getFirestore(app);
+        }
+        return true;
+    } catch (error) {
+        console.warn('Firestore not available, falling back to markdown:', error);
+        return false;
+    }
+}
+
+// Load blog posts from Firestore (or fallback to markdown)
+async function loadBlogPosts() {
+    // Try Firestore first
+    if (initFirestore()) {
+        try {
+            const { collection, query, where, getDocs, orderBy } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js');
+            const postsRef = collection(firestoreDb, 'posts');
+            const q = query(postsRef, where('published', '==', true), orderBy('date', 'desc'));
+            const snapshot = await getDocs(q);
+            
+            const posts = [];
+            snapshot.forEach((doc) => {
+                const data = doc.data();
+                // Handle date - can be string or Firestore Timestamp
+                let dateStr = data.date;
+                if (!dateStr && data.created_at) {
+                    // Convert Firestore Timestamp to date string
+                    if (data.created_at.toDate) {
+                        dateStr = data.created_at.toDate().toISOString().split('T')[0];
+                    } else if (data.created_at instanceof Date) {
+                        dateStr = data.created_at.toISOString().split('T')[0];
+                    }
+                }
+                if (!dateStr) {
+                    dateStr = new Date().toISOString().split('T')[0];
+                }
+                
+                posts.push({
+                    id: doc.id,
+                    ...data,
+                    content: parseMarkdown(data.content || ''),
+                    date: dateStr
+                });
+            });
+            
+            blogPosts = posts;
+            return blogPosts;
+        } catch (error) {
+            console.warn('Error loading from Firestore, falling back to markdown:', error);
+            // Fall through to markdown fallback
+        }
+    }
+
+    // Fallback to markdown files
+    try {
         const manifestResponse = await fetch('content/posts-manifest.json');
         const manifest = await manifestResponse.json();
         
@@ -331,22 +393,25 @@ function initZoom() {
 async function renderBlogIndex() {
     await loadBlogPosts();
     
+    // Filter to show only blog posts (not announcements)
+    const blogOnlyPosts = blogPosts.filter(post => post.type === 'blog');
+    
     const main = document.querySelector('main');
     main.innerHTML = `
         <div class="blog-page">
-            <h1>Blog & Announcements</h1>
+            <h1>Blog</h1>
             <div class="blog-posts-list">
-                ${blogPosts.map(post => `
+                ${blogOnlyPosts.length > 0 ? blogOnlyPosts.map(post => `
                     <article class="blog-post-preview">
                         <h2><a href="/blog/${post.slug}" data-route="/blog/${post.slug}">${post.title}</a></h2>
                         <div class="post-meta">
                             <span class="post-date">${new Date(post.date).toLocaleDateString()}</span>
-                            <span class="post-type">${post.type === 'announcement' ? 'Announcement' : 'Blog'}</span>
+                            <span class="post-type">Blog</span>
                         </div>
                         <p class="post-excerpt">${post.excerpt || ''}</p>
                         <a href="/blog/${post.slug}" data-route="/blog/${post.slug}" class="read-more">Read more →</a>
                     </article>
-                `).join('')}
+                `).join('') : '<p>No blog posts yet.</p>'}
             </div>
         </div>
     `;

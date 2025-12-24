@@ -7,7 +7,8 @@ A static-first website for displaying artwork, built for GitHub Pages deployment
 - **Portfolio Gallery**: Dynamic gallery with proper aspect ratio preservation
 - **Image Detail Pages**: Click any artwork to view it with zoom and pan functionality
 - **Multi-Angle Support**: Each artwork can have multiple images (angles)
-- **Blog & Announcements**: Markdown-based blog system
+- **Blog & Announcements**: Firebase-powered blog system with admin panel
+- **Admin Panel**: Secure login for creating blog posts and announcements
 - **Homepage Announcements**: Latest 3 announcements displayed on homepage
 - **Mobile-Friendly**: Responsive design that works on all devices
 
@@ -18,12 +19,15 @@ A static-first website for displaying artwork, built for GitHub Pages deployment
 ├── index.html          # Main HTML file (SPA container)
 ├── router.js           # Client-side routing
 ├── app.js              # Main application logic
+├── admin.js            # Admin panel functionality
+├── firebase-config.js  # Firebase configuration (you add your keys)
+├── firestore.rules     # Firestore security rules
 ├── styles.css          # All styles
 ├── images/              # Artwork images directory
 ├── content/
 │   ├── images.json     # Artwork data (titles, prices, angles, etc.)
-│   ├── posts/          # Markdown blog posts
-│   └── posts-manifest.json  # List of blog post files
+│   ├── posts/          # Markdown blog posts (fallback)
+│   └── posts-manifest.json  # List of blog post files (fallback)
 └── README.md           # This file
 ```
 
@@ -64,49 +68,97 @@ Open `content/images.json` and add a new entry:
 
 **Note:** The `angles` array should always include at least the `mainImage`. If you only have one image, just include it once.
 
-## Adding Blog Posts or Announcements
+## Firebase Setup (Required for Admin Panel)
 
-### Step 1: Create Markdown File
-Create a new `.md` file in `content/posts/` with frontmatter:
+The site uses Firebase for secure admin authentication and blog post storage.
 
-```markdown
----
-title: "Your Post Title"
-date: "2025-01-20"
-type: "blog"
-excerpt: "Short excerpt that appears in listings"
-slug: "your-post-slug"
----
+### Step 1: Create Firebase Project
 
-Your post content here. Use **markdown** formatting.
+1. Go to [Firebase Console](https://console.firebase.google.com/)
+2. Click "Add project" or select an existing project
+3. Follow the setup wizard (disable Google Analytics if you don't need it)
 
-## Headers
+### Step 2: Enable Email/Password Authentication
 
-- Lists
-- Work too
+1. In Firebase Console, go to **Authentication** > **Sign-in method**
+2. Click on **Email/Password**
+3. Enable "Email/Password" and click **Save**
 
-More content...
+### Step 3: Create Admin User
+
+1. Go to **Authentication** > **Users**
+2. Click **Add user**
+3. Enter email: `melinaaxelrad@gmail.com`
+4. Set a password (you'll use this to log in)
+5. Click **Add user**
+
+**Important:** The password is set in Firebase Console, NOT in the code. This keeps it secure.
+
+### Step 4: Create Firestore Database
+
+1. Go to **Firestore Database** in Firebase Console
+2. Click **Create database**
+3. Start in **production mode** (we'll add security rules)
+4. Choose a location (select closest to your users)
+5. Click **Enable**
+
+### Step 5: Apply Security Rules
+
+1. Go to **Firestore Database** > **Rules**
+2. Copy the contents of `firestore.rules` from this repository
+3. Paste into the rules editor
+4. Click **Publish**
+
+The rules allow:
+- **Public read** access to all posts
+- **Write access** only for `melinaaxelrad@gmail.com`
+
+### Step 6: Get Firebase Configuration
+
+1. Go to **Project Settings** (gear icon) > **General**
+2. Scroll down to "Your apps" section
+3. Click the web icon (`</>`) to add a web app
+4. Register app with a nickname (e.g., "Melina Art Website")
+5. Copy the `firebaseConfig` object
+
+### Step 7: Add Configuration to Site
+
+1. Open `firebase-config.js` in this repository
+2. Replace the placeholder values with your actual Firebase config:
+
+```javascript
+const firebaseConfig = {
+  apiKey: "YOUR_ACTUAL_API_KEY",
+  authDomain: "your-project-id.firebaseapp.com",
+  projectId: "your-project-id",
+  storageBucket: "your-project-id.appspot.com",
+  messagingSenderId: "YOUR_SENDER_ID",
+  appId: "YOUR_APP_ID"
+};
 ```
 
-**Frontmatter Fields:**
-- `title`: Post title
-- `date`: Date in YYYY-MM-DD format
-- `type`: Either `"blog"` or `"announcement"`
-- `excerpt`: Short description (shown in listings)
-- `slug`: URL-friendly identifier (used in `/blog/your-post-slug`)
+3. Save the file
 
-### Step 2: Update Manifest
-Add your new filename to `content/posts-manifest.json`:
+**Security Note:** These keys are safe to expose in client-side code. Firebase security rules protect your data.
 
-```json
-[
-  "example-announcement.md",
-  "welcome-blog.md",
-  "your-new-post.md"
-]
-```
+## Adding Blog Posts or Announcements (Admin Panel)
 
-**Important:** The order in the manifest doesn't matter - posts are sorted by date automatically.
+Once Firebase is set up:
+
+1. Navigate to `/admin` on your website
+2. Log in with `melinaaxelrad@gmail.com` and your password
+3. Fill out the "Create New Post" form:
+   - **Type**: Select "blog" or "announcement"
+   - **Title**: Post title
+   - **Slug**: Auto-generated from title (or enter custom)
+   - **Date**: Select date
+   - **Excerpt**: Short description (optional)
+   - **Content**: Full post content (Markdown supported)
+4. Click "Create Post"
+
+Posts are stored in Firestore and appear immediately on the site.
+
+**Fallback:** If Firebase is not configured, the site falls back to reading markdown files from `content/posts/` (see old method below).
 
 ## Testing Locally
 

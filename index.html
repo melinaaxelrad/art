@@ -30,8 +30,19 @@
         <p>&copy; 2025 Melina Axelrad. All rights reserved.</p>
     </footer>
 
+    <!-- Firebase SDK -->
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
+        import { getAuth } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
+        import { getFirestore } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+        
+        // Make Firebase available globally
+        window.firebaseModules = { initializeApp, getAuth, getFirestore };
+    </script>
+    <script src="firebase-config.js"></script>
     <script src="router.js"></script>
     <script src="app.js"></script>
+    <script src="admin.js"></script>
 </body>
 </html>
 
