@@ -4,8 +4,8 @@
     "title": "Hydrangeas",
     "details": "20 x 20, oil on canvas",
     "price": "$1,200",
-    "mainImage": "images/painting-1.jpg",
-    "angles": ["images/painting-1.jpg"],
+    "mainImage": "images/painting-1.JPG",
+    "angles": ["images/painting-1.JPG"],
     "width": 20,
     "height": 20
   },
@@ -14,8 +14,8 @@
     "title": "Dolomites",
     "details": "8 x 10, oil on canvas",
     "price": "$250",
-    "mainImage": "images/painting-2.jpg",
-    "angles": ["images/painting-2.jpg"],
+    "mainImage": "images/painting-2.JPG",
+    "angles": ["images/painting-2.JPG"],
     "width": 8,
     "height": 10
   },
@@ -24,8 +24,8 @@
     "title": "Virginian Slopes",
     "details": "11 x 14, oil on canvas",
     "price": "SOLD",
-    "mainImage": "images/painting-3.jpg",
-    "angles": ["images/painting-3.jpg"],
+    "mainImage": "images/painting-3.JPG",
+    "angles": ["images/painting-3.JPG"],
     "width": 11,
     "height": 14
   },
@@ -34,8 +34,8 @@
     "title": "Lake Peak",
     "details": "22 x 28, oil on canvas",
     "price": "SOLD",
-    "mainImage": "images/painting-4.jpg",
-    "angles": ["images/painting-4.jpg"],
+    "mainImage": "images/painting-4.JPG",
+    "angles": ["images/painting-4.JPG"],
     "width": 22,
     "height": 28
   },
@@ -54,8 +54,8 @@
     "title": "Delilah in the leaves",
     "details": "14 x 11, oil on canvas",
     "price": "on exhibition",
-    "mainImage": "images/painting-6.jpg",
-    "angles": ["images/painting-6.jpg"],
+    "mainImage": "images/painting-6.JPG",
+    "angles": ["images/painting-6.JPG"],
     "width": 14,
     "height": 11
   }
