@@ -112,10 +112,14 @@ async function loadArtworks() {
 // Load blog posts from JSON file
 async function loadBlogPosts() {
     try {
-        const basePath = getBasePath();
-        const response = await fetch(basePath + 'content/posts.json');
+        // Use BASE_PATH constant (not function call) to ensure absolute path
+        const postsUrl = BASE_PATH + 'content/posts.json';
+        console.log('Fetching posts from:', postsUrl);
+        
+        const response = await fetch(postsUrl);
         if (!response.ok) {
-            console.warn('Could not load posts.json');
+            console.error(`Failed to load posts.json: ${response.status} ${response.statusText}`);
+            console.error('Attempted URL:', postsUrl);
             blogPosts = [];
             return blogPosts;
         }
@@ -126,9 +130,11 @@ async function loadBlogPosts() {
             return new Date(b.date) - new Date(a.date);
         });
         
+        console.log(`Loaded ${blogPosts.length} posts`);
         return blogPosts;
     } catch (error) {
         console.error('Error loading blog posts:', error);
+        console.error('Attempted URL:', BASE_PATH + 'content/posts.json');
         blogPosts = [];
         return blogPosts;
     }
