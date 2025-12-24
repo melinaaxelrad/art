@@ -1,103 +1,41 @@
-// Admin functionality with Firebase Auth
-let auth = null;
-let db = null;
+// Simple login system (no Firebase)
 const ADMIN_EMAIL = 'melinaaxelrad@gmail.com';
+const ADMIN_PASSWORD = '2337';
 
-// Check if Firebase is properly configured
-function isFirebaseConfigured() {
-    try {
-        if (!window.firebaseModules) {
-            return false;
-        }
-        // Check if firebaseConfig exists and is not a placeholder
-        if (typeof firebaseConfig === 'undefined' || !firebaseConfig) {
-            return false;
-        }
-        // Check if config has placeholder values
-        if (firebaseConfig.apiKey === 'YOUR_API_KEY' || 
-            firebaseConfig.projectId === 'YOUR_PROJECT_ID' ||
-            !firebaseConfig.apiKey || 
-            !firebaseConfig.projectId) {
-            return false;
-        }
-        return true;
-    } catch (error) {
-        return false;
-    }
+// Check if user is logged in
+function isLoggedIn() {
+    return sessionStorage.getItem('loggedIn') === 'true';
 }
 
-// Initialize Firebase
-function initFirebase() {
-    if (!isFirebaseConfigured()) {
-        console.warn('Firebase not configured. Admin features will not work.');
-        return false;
-    }
-
-    try {
-        if (!window.firebaseModules) {
-            return false;
-        }
-        const app = window.firebaseModules.initializeApp(firebaseConfig);
-        auth = window.firebaseModules.getAuth(app);
-        db = window.firebaseModules.getFirestore(app);
-        return true;
-    } catch (error) {
-        console.error('Firebase initialization error:', error);
-        return false;
-    }
+// Get logged in user email
+function getLoggedInUser() {
+    return sessionStorage.getItem('userEmail');
 }
 
-// Check if user is admin
-function isAdmin(user) {
-    return user && user.email === ADMIN_EMAIL;
+// Check if logged in user is admin
+function isAdmin() {
+    const userEmail = getLoggedInUser();
+    return userEmail === ADMIN_EMAIL;
 }
 
 // Render login page
 function renderAdminPage() {
     const main = document.querySelector('main');
     
-    // Check Firebase initialization
-    if (!initFirebase()) {
-        main.innerHTML = `
-            <div class="admin-page">
-                <h1>Login</h1>
-                <div class="error-message" style="margin-top: 2rem;">
-                    <h2>Login requires Firebase setup</h2>
-                    <p>Firebase is not configured. To enable login features:</p>
-                    <ol style="text-align: left; max-width: 600px; margin: 1rem auto;">
-                        <li>Set up a Firebase project (see README.md)</li>
-                        <li>Add your Firebase configuration to <code>firebase-config.js</code></li>
-                        <li>Enable Email/Password authentication in Firebase Console</li>
-                        <li>Create a user with email: <code>melinaaxelrad@gmail.com</code></li>
-                    </ol>
-                    <p>Once configured, you'll be able to log in and create blog posts and announcements.</p>
-                </div>
-            </div>
-        `;
-        if (typeof updateNavigation === 'function') {
-            updateNavigation();
+    // Check if already logged in
+    if (isLoggedIn()) {
+        if (isAdmin()) {
+            // Admin logged in - show admin UI
+            renderAdminUI();
+        } else {
+            // Regular user logged in - show limited access message
+            renderUserLoggedIn();
         }
         return;
     }
 
-    // Check auth state
-    try {
-        auth.onAuthStateChanged((user) => {
-            if (!user) {
-                // Not logged in - show login form
-                renderLoginForm();
-            } else if (isAdmin(user)) {
-                // Admin logged in - show admin UI
-                renderAdminUI(user);
-            } else {
-                // Logged in but not authorized
-                renderNotAuthorized();
-            }
-        });
-    } catch (error) {
-        console.error('Auth state error:', error);
-        renderLoginForm();
-    }
+    // Not logged in - show login form
+    renderLoginForm();
 }
 
 // Render login form
@@ -122,18 +60,22 @@ function renderLoginForm() {
     `;
 
     const form = document.getElementById('login-form');
-    form.addEventListener('submit', async (e) => {
+    form.addEventListener('submit', (e) => {
         e.preventDefault();
         const email = document.getElementById('admin-email').value;
         const password = document.getElementById('admin-password').value;
         const errorDiv = document.getElementById('login-error');
 
-        try {
-            const { signInWithEmailAndPassword } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js');
-            await signInWithEmailAndPassword(auth, email, password);
-            // Auth state change will trigger re-render
-        } catch (error) {
-            errorDiv.textContent = error.message || 'Login failed. Please check your credentials.';
+        // Simple login check - anyone can log in
+        if (email && password) {
+            // Store login state
+            sessionStorage.setItem('loggedIn', 'true');
+            sessionStorage.setItem('userEmail', email);
+            
+            // Re-render page to show appropriate UI
+            renderAdminPage();
+        } else {
+            errorDiv.textContent = 'Please enter both email and password.';
             errorDiv.style.display = 'block';
         }
     });
@@ -143,13 +85,15 @@ function renderLoginForm() {
     }
 }
 
-// Render not authorized message
-function renderNotAuthorized() {
+// Render user logged in (non-admin)
+function renderUserLoggedIn() {
     const main = document.querySelector('main');
+    const userEmail = getLoggedInUser();
     main.innerHTML = `
         <div class="admin-page">
-            <h1>Not Authorized</h1>
-            <p>You are logged in, but you do not have admin access.</p>
+            <h1>Welcome</h1>
+            <p>You are logged in as: <strong>${userEmail}</strong></p>
+            <p>You do not have admin access. Only ${ADMIN_EMAIL} can create posts.</p>
             <button id="logout-btn" class="logout-btn">Logout</button>
         </div>
     `;
@@ -161,20 +105,26 @@ function renderNotAuthorized() {
 }
 
 // Render admin UI
-function renderAdminUI(user) {
+function renderAdminUI() {
     const main = document.querySelector('main');
+    const userEmail = getLoggedInUser();
+    
     main.innerHTML = `
         <div class="admin-page">
             <div class="admin-header">
                 <h1>Admin Panel</h1>
                 <div class="admin-user-info">
-                    <span>Logged in as: ${user.email}</span>
+                    <span>Logged in as: ${userEmail}</span>
                     <button id="logout-btn" class="logout-btn">Logout</button>
                 </div>
             </div>
 
+            ${isAdmin() ? `
             <div class="admin-section">
                 <h2>Create New Post</h2>
+                <p style="margin-bottom: 1.5rem; color: #666;">
+                    Fill out the form below to generate a JSON entry. Copy the generated JSON and add it to <code>content/posts.json</code>.
+                </p>
                 <form id="post-form" class="admin-form">
                     <div class="form-group">
                         <label for="post-type">Type</label>
@@ -203,33 +153,57 @@ function renderAdminUI(user) {
                         <label for="post-content">Content (Markdown supported)</label>
                         <textarea id="post-content" name="content" rows="10" required></textarea>
                     </div>
-                    <button type="submit">Create Post</button>
+                    <button type="submit">Generate JSON</button>
                     <div id="post-message" class="success-message" style="display: none;"></div>
                 </form>
+                <div id="json-output" style="display: none; margin-top: 2rem;">
+                    <h3>Generated JSON Entry</h3>
+                    <p style="margin-bottom: 1rem; color: #666;">Copy this and add it to <code>content/posts.json</code>:</p>
+                    <textarea id="json-textarea" readonly style="width: 100%; min-height: 200px; font-family: monospace; padding: 1rem; background: #f5f5f5; border: 1px solid #ddd; border-radius: 4px;"></textarea>
+                    <button id="copy-json-btn" class="logout-btn" style="margin-top: 1rem; background-color: #2C3E50;">Copy JSON</button>
+                </div>
             </div>
+            ` : `
+            <div class="admin-section">
+                <p>You do not have admin access. Only ${ADMIN_EMAIL} can create posts.</p>
+            </div>
+            `}
         </div>
     `;
 
-    // Auto-generate slug from title
-    document.getElementById('post-title').addEventListener('input', (e) => {
-        const slugInput = document.getElementById('post-slug');
-        if (!slugInput.value) {
-            const slug = e.target.value
-                .toLowerCase()
-                .replace(/[^a-z0-9]+/g, '-')
-                .replace(/^-|-$/g, '');
-            slugInput.value = slug;
+    // Only set up form if user is admin and form exists
+    if (isAdmin()) {
+        const postTitleInput = document.getElementById('post-title');
+        const postForm = document.getElementById('post-form');
+        
+        if (postTitleInput) {
+            // Auto-generate slug from title
+            postTitleInput.addEventListener('input', (e) => {
+                const slugInput = document.getElementById('post-slug');
+                if (!slugInput.value) {
+                    const slug = e.target.value
+                        .toLowerCase()
+                        .replace(/[^a-z0-9]+/g, '-')
+                        .replace(/^-|-$/g, '');
+                    slugInput.value = slug;
+                }
+            });
         }
-    });
 
-    // Set default date to today
-    document.getElementById('post-date').valueAsDate = new Date();
+        // Set default date to today
+        const postDateInput = document.getElementById('post-date');
+        if (postDateInput) {
+            postDateInput.valueAsDate = new Date();
+        }
 
-    // Handle form submission
-    document.getElementById('post-form').addEventListener('submit', async (e) => {
-        e.preventDefault();
-        await createPost();
-    });
+        // Handle form submission
+        if (postForm) {
+            postForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                generatePostJSON();
+            });
+        }
+    }
 
     // Handle logout
     document.getElementById('logout-btn').addEventListener('click', handleLogout);
@@ -239,8 +213,14 @@ function renderAdminUI(user) {
     }
 }
 
-// Create new post
-async function createPost() {
+// Generate JSON for new post
+function generatePostJSON() {
+    // Check if user is admin
+    if (!isAdmin()) {
+        alert('Only admin users can create posts.');
+        return;
+    }
+
     const title = document.getElementById('post-title').value;
     let slug = document.getElementById('post-slug').value;
     const date = document.getElementById('post-date').value;
@@ -256,50 +236,81 @@ async function createPost() {
             .replace(/^-|-$/g, '');
     }
 
+    // Parse markdown content to HTML
+    const htmlContent = parseMarkdown(content);
+
+    // Generate unique ID (timestamp-based)
+    const id = Date.now().toString();
+
+    // Create JSON entry
+    const postEntry = {
+        id: id,
+        title: title,
+        slug: slug,
+        date: date,
+        type: type,
+        excerpt: excerpt || content.substring(0, 200),
+        content: htmlContent
+    };
+
+    // Format JSON nicely
+    const jsonString = JSON.stringify(postEntry, null, 2);
+
+    // Show JSON output
+    const jsonOutput = document.getElementById('json-output');
+    const jsonTextarea = document.getElementById('json-textarea');
     const messageDiv = document.getElementById('post-message');
 
-    try {
-        const { collection, addDoc, serverTimestamp } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js');
-        await addDoc(collection(db, 'posts'), {
-            title,
-            slug,
-            date,
-            excerpt: excerpt || content.substring(0, 200),
-            content,
-            type,
-            published: true,
-            created_at: serverTimestamp(),
-            updated_at: serverTimestamp()
-        });
+    jsonTextarea.value = jsonString;
+    jsonOutput.style.display = 'block';
+    messageDiv.textContent = 'JSON generated! Copy it and add to content/posts.json';
+    messageDiv.style.display = 'block';
+    messageDiv.className = 'success-message';
 
-        messageDiv.textContent = 'Post created successfully!';
-        messageDiv.style.display = 'block';
-        messageDiv.className = 'success-message';
+    // Scroll to JSON output
+    jsonOutput.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
 
-        // Reset form
-        document.getElementById('post-form').reset();
-        document.getElementById('post-date').valueAsDate = new Date();
+    // Copy button functionality
+    document.getElementById('copy-json-btn').onclick = () => {
+        jsonTextarea.select();
+        document.execCommand('copy');
+        alert('JSON copied to clipboard!');
+    };
 
-        setTimeout(() => {
-            messageDiv.style.display = 'none';
-        }, 3000);
-    } catch (error) {
-        messageDiv.textContent = 'Error creating post: ' + error.message;
-        messageDiv.style.display = 'block';
-        messageDiv.className = 'error-message';
-    }
+    // Reset form
+    document.getElementById('post-form').reset();
+    document.getElementById('post-date').valueAsDate = new Date();
+}
+
+// Simple markdown parser (same as in app.js)
+function parseMarkdown(md) {
+    // Convert headers
+    md = md.replace(/^### (.*$)/gim, '<h3>$1</h3>');
+    md = md.replace(/^## (.*$)/gim, '<h2>$1</h2>');
+    md = md.replace(/^# (.*$)/gim, '<h1>$1</h1>');
+    
+    // Convert bold
+    md = md.replace(/\*\*(.*?)\*\*/gim, '<strong>$1</strong>');
+    
+    // Convert italic
+    md = md.replace(/\*(.*?)\*/gim, '<em>$1</em>');
+    
+    // Convert paragraphs
+    md = md.replace(/\n\n/gim, '</p><p>');
+    md = '<p>' + md + '</p>';
+    
+    // Convert line breaks
+    md = md.replace(/\n/gim, '<br>');
+    
+    return md;
 }
 
 // Handle logout
-async function handleLogout() {
-    try {
-        const { signOut } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js');
-        await signOut(auth);
-        // Auth state change will trigger re-render
-    } catch (error) {
-        console.error('Logout error:', error);
-        alert('Error logging out: ' + error.message);
-    }
+function handleLogout() {
+    sessionStorage.removeItem('loggedIn');
+    sessionStorage.removeItem('userEmail');
+    // Re-render to show login form
+    renderAdminPage();
 }
 
 // Register admin route

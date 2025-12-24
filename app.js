@@ -96,95 +96,29 @@ async function loadArtworks() {
     }
 }
 
-// Check if Firebase is properly configured
-function isFirebaseConfigured() {
-    try {
-        if (!window.firebaseModules) {
-            return false;
-        }
-        // Check if firebaseConfig exists and is not a placeholder
-        if (typeof firebaseConfig === 'undefined' || !firebaseConfig) {
-            return false;
-        }
-        // Check if config has placeholder values
-        if (firebaseConfig.apiKey === 'YOUR_API_KEY' || 
-            firebaseConfig.projectId === 'YOUR_PROJECT_ID' ||
-            !firebaseConfig.apiKey || 
-            !firebaseConfig.projectId) {
-            return false;
-        }
-        return true;
-    } catch (error) {
-        return false;
-    }
-}
-
-// Initialize Firestore (for blog posts)
-let firestoreDb = null;
-
-function initFirestore() {
-    if (!isFirebaseConfigured()) {
-        // Firebase not configured - fall back to markdown files
-        return false;
-    }
-
-    try {
-        if (!firestoreDb && window.firebaseModules) {
-            const app = window.firebaseModules.initializeApp(firebaseConfig);
-            firestoreDb = window.firebaseModules.getFirestore(app);
-        }
-        return true;
-    } catch (error) {
-        console.warn('Firestore not available, falling back to markdown:', error);
-        return false;
-    }
-}
-
-// Load blog posts from Firestore (or fallback to markdown)
+// Load blog posts from JSON file
 async function loadBlogPosts() {
-    // Try Firestore first
-    if (initFirestore()) {
-        try {
-            const { collection, query, where, getDocs, orderBy } = await import('https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js');
-            const postsRef = collection(firestoreDb, 'posts');
-            const q = query(postsRef, where('published', '==', true), orderBy('date', 'desc'));
-            const snapshot = await getDocs(q);
-            
-            const posts = [];
-            snapshot.forEach((doc) => {
-                const data = doc.data();
-                // Handle date - can be string or Firestore Timestamp
-                let dateStr = data.date;
-                if (!dateStr && data.created_at) {
-                    // Convert Firestore Timestamp to date string
-                    if (data.created_at.toDate) {
-                        dateStr = data.created_at.toDate().toISOString().split('T')[0];
-                    } else if (data.created_at instanceof Date) {
-                        dateStr = data.created_at.toISOString().split('T')[0];
-                    }
-                }
-                if (!dateStr) {
-                    dateStr = new Date().toISOString().split('T')[0];
-                }
-                
-                posts.push({
-                    id: doc.id,
-                    ...data,
-                    content: parseMarkdown(data.content || ''),
-                    date: dateStr
-                });
-            });
-            
-            blogPosts = posts;
+    try {
+        const basePath = getBasePath();
+        const response = await fetch(basePath + 'content/posts.json');
+        if (!response.ok) {
+            console.warn('Could not load posts.json');
+            blogPosts = [];
             return blogPosts;
-        } catch (error) {
-            console.warn('Error loading from Firestore:', error);
         }
+        const posts = await response.json();
+        
+        // Sort by date (newest first)
+        blogPosts = posts.sort((a, b) => {
+            return new Date(b.date) - new Date(a.date);
+        });
+        
+        return blogPosts;
+    } catch (error) {
+        console.error('Error loading blog posts:', error);
+        blogPosts = [];
+        return blogPosts;
     }
-
-    // No fallback - posts must be created via admin panel
-    blogPosts = [];
-    return blogPosts;
 }
 
 // Render gallery with proper aspect ratios

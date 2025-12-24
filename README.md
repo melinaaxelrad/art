@@ -67,85 +67,22 @@ Open `content/images.json` and add a new entry:
 
 **Note:** The `angles` array should always include at least the `mainImage`. If you only have one image, just include it once.
 
-## Firebase Setup (Required for Admin Panel)
+## Login System
 
-The site uses Firebase for secure admin authentication and blog post storage.
+The site uses a simple login system (no Firebase required):
+- **Anyone can log in** with any email and password
+- **Only `melinaaxelrad@gmail.com` gets admin access**
+- Login state is stored in browser session (cleared when browser closes)
+- Admin access allows generating JSON for blog posts
 
-### Step 1: Create Firebase Project
+## Adding Blog Posts or Announcements
 
-1. Go to [Firebase Console](https://console.firebase.google.com/)
-2. Click "Add project" or select an existing project
-3. Follow the setup wizard (disable Google Analytics if you don't need it)
+Blog posts are stored in `content/posts.json` (hardcoded JSON file, similar to `images.json`).
 
-### Step 2: Enable Email/Password Authentication
+### Method 1: Using Admin Panel (Recommended)
 
-1. In Firebase Console, go to **Authentication** > **Sign-in method**
-2. Click on **Email/Password**
-3. Enable "Email/Password" and click **Save**
-
-### Step 3: Create Admin User
-
-1. Go to **Authentication** > **Users**
-2. Click **Add user**
-3. Enter email: `melinaaxelrad@gmail.com`
-4. Set a password (you'll use this to log in)
-5. Click **Add user**
-
-**Important:** The password is set in Firebase Console, NOT in the code. This keeps it secure.
-
-### Step 4: Create Firestore Database
-
-1. Go to **Firestore Database** in Firebase Console
-2. Click **Create database**
-3. Start in **production mode** (we'll add security rules)
-4. Choose a location (select closest to your users)
-5. Click **Enable**
-
-### Step 5: Apply Security Rules
-
-1. Go to **Firestore Database** > **Rules**
-2. Copy the contents of `firestore.rules` from this repository
-3. Paste into the rules editor
-4. Click **Publish**
-
-The rules allow:
-- **Public read** access to all posts
-- **Write access** only for `melinaaxelrad@gmail.com`
-
-### Step 6: Get Firebase Configuration
-
-1. Go to **Project Settings** (gear icon) > **General**
-2. Scroll down to "Your apps" section
-3. Click the web icon (`</>`) to add a web app
-4. Register app with a nickname (e.g., "Melina Art Website")
-5. Copy the `firebaseConfig` object
-
-### Step 7: Add Configuration to Site
-
-1. Open `firebase-config.js` in this repository
-2. Replace the placeholder values with your actual Firebase config:
-
-```javascript
-const firebaseConfig = {
-  apiKey: "YOUR_ACTUAL_API_KEY",
-  authDomain: "your-project-id.firebaseapp.com",
-  projectId: "your-project-id",
-  storageBucket: "your-project-id.appspot.com",
-  messagingSenderId: "YOUR_SENDER_ID",
-  appId: "YOUR_APP_ID"
-};
-```
-
-3. Save the file
-
-**Security Note:** These keys are safe to expose in client-side code. Firebase security rules protect your data.
-
-## Adding Blog Posts or Announcements (Admin Panel)
-
-Once Firebase is set up:
-
-1. Navigate to `/admin` on your website
-2. Log in with `melinaaxelrad@gmail.com` and your password
+1. Navigate to `/admin` on your website (or click "Login" in the navbar)
+2. Log in with email `melinaaxelrad@gmail.com` and any password
 3. Fill out the "Create New Post" form:
    - **Type**: Select "blog" or "announcement"
    - **Title**: Post title
@@ -153,11 +90,32 @@ Once Firebase is set up:
    - **Date**: Select date
    - **Excerpt**: Short description (optional)
    - **Content**: Full post content (Markdown supported)
-4. Click "Create Post"
+4. Click "Generate JSON"
+5. Copy the generated JSON
+6. Open `content/posts.json` and add the new entry to the array (make sure to add a comma between entries)
+7. Save and commit the file
 
-Posts are stored in Firestore and appear immediately on the site.
+### Method 2: Manual JSON Entry
 
-**Note:** Blog posts are stored in Firestore and must be created through the admin panel. There is no markdown fallback.
+Edit `content/posts.json` directly and add a new entry:
+
+```json
+{
+  "id": "3",
+  "title": "Your Post Title",
+  "slug": "your-post-slug",
+  "date": "2025-01-20",
+  "type": "blog",
+  "excerpt": "Short excerpt",
+  "content": "<p>Your HTML content here. Use <strong>HTML</strong> tags.</p>"
+}
+```
+
+**Note:** 
+- `id` should be unique (use timestamp or incrementing number)
+- `content` should be HTML (not markdown) - the admin panel converts markdown to HTML automatically
+- `date` format: YYYY-MM-DD
+- `type` should be either "blog" or "announcement"
 
 ## Testing Locally
 
@@ -229,10 +187,9 @@ Since this is a static site, you can test it locally:
 - Check browser console for 404 errors
 
 **Blog posts not appearing:**
-- Check that Firebase is configured correctly
-- Verify posts were created via the admin panel
-- Check Firestore security rules allow public read access
-- Check browser console for errors
+- Check that `content/posts.json` exists and is valid JSON
+- Verify posts have correct date format (YYYY-MM-DD)
+- Check browser console for errors loading posts.json
 
 **Routing not working locally:**
 - Use a proper HTTP server (not `file://` protocol)
