@@ -488,7 +488,7 @@ async function renderHome() {
         <form 
             class="contact-form"
             id="contactForm"
-            action="https://formspree.io/f/abcdwxyz"
+            action="https://formspree.io/f/mojqalkb"
             method="POST"
         >
             <input type="hidden" name="_subject" value="New message from art website">
