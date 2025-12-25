@@ -474,8 +474,9 @@ async function renderHome() {
                     and blending. She explores landscapes that range from her backyard to faraway mountains and oceansides. 
                 </p>
             </div>
-        </section>
-            <section id="contact" class="contact-section">
+ 
+    </section>
+       <section id="contact" class="contact-section">
     <div class="contact-content">
         <h2>Contact</h2>
         <p>For inquiries about available work, commissions, or exhibitions, please reach out:</p>
@@ -485,15 +486,7 @@ async function renderHome() {
             <p><strong>Phone:</strong> (703) 577-8805</p>
         </div>
 
-        <form 
-            class="contact-form"
-            id="contactForm"
-            action="https://formspree.io/f/mojqalkb"
-            method="POST"
-        >
-            <input type="hidden" name="_subject" value="New message from art website">
-            <input type="text" name="_gotcha" style="display:none">
-
+        <form class="contact-form" id="contactForm">
             <div class="form-group">
                 <label for="name">Name</label>
                 <input type="text" id="name" name="name" required>
@@ -510,11 +503,11 @@ async function renderHome() {
             </div>
 
             <button type="submit">Send Message</button>
-
             <p class="form-status" id="formStatus"></p>
         </form>
     </div>
 </section>
+
                     `;
     
     renderGallery(artworks);
