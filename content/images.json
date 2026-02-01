@@ -30,6 +30,16 @@
     "height": 10
   },
   {
+  "id": "6",
+    "title": "Delilah in the leaves",
+    "details": "14 x 11, oil on canvas",
+    "price": "On Exhibition",
+    "mainImage": "images/painting-6.JPG",
+    "angles": ["images/painting-6.JPG"],
+    "width": 14,
+    "height": 11
+  },
+  {
     "id": "3",
     "title": "Virginian Slopes",
     "details": "11 x 14, oil on canvas",
@@ -58,16 +68,6 @@
     "angles": ["images/painting-5.JPG"],
     "width": 16,
     "height": 20
-  },
-  {
-    "id": "6",
-    "title": "Delilah in the leaves",
-    "details": "14 x 11, oil on canvas",
-    "price": "On Exhibition",
-    "mainImage": "images/painting-6.JPG",
-    "angles": ["images/painting-6.JPG"],
-    "width": 14,
-    "height": 11
   }
 ]
 
