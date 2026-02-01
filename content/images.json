@@ -9,6 +9,15 @@
     "width": 20,
     "height": 20
   },
+  "id": "7",
+    "title": "A little Yellow House and Monte Legnone",
+    "details": "20 x 24, oil on canvas",
+    "price": "On Exhibition",
+    "mainImage": "images/painting-7.JPG",
+    "angles": ["images/painting-7.JPG"],
+    "width": 20,
+    "height": 24
+},
   {
     "id": "2",
     "title": "Dolomites",
