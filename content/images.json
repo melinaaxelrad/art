@@ -40,6 +40,16 @@
     "height": 11
   },
   {
+    "id": "8",
+    "title": "Cactus",
+    "details": "20 x 24, oil on canvas",
+    "price": "SOLD",
+    "mainImage": "images/painting-8.JPG",
+    "angles": ["images/painting-8.JPG"],
+    "width": 20,
+    "height": 24
+  },
+  {
     "id": "3",
     "title": "Virginian Slopes",
     "details": "11 x 14, oil on canvas",
